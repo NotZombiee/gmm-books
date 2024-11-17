@@ -11,3 +11,9 @@ CreateThread(function()
         end)
     end
 end)
+
+RegisterNetEvent('ox:openprinter')
+AddEventHandler('ox:openprinter', function()
+    -- Trigger the client event to open the ox context menu
+    TriggerClientEvent('ox:openprinter', source)
+end)

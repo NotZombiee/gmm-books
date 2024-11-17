@@ -7,6 +7,7 @@ ui_page 'html/index.html'
 
 shared_scripts {
 	'config.lua',
+    '@ox_lib/init.lua',
 }
 
 server_scripts {
