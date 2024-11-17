@@ -11,11 +11,11 @@ local function HandleProp(action, ped, ped_coords, bookName, prop)
     if action == 'add' then
         local propName = nil
         if Config.Books[bookName]["prop"] == 'book' then
-            propName = `prop_novel_01`
+            propName = "prop_novel_01"
             bookProp = CreateObject(propName, ped_coords.x, ped_coords.y, ped_coords.z,  true,  true, true) 
             AttachEntityToEntity(bookProp, ped, GetPedBoneIndex(ped, 6286), 0.15, 0.03, -0.065, 0.0, 180.0, 90.0, true, true, false, true, 1, true)
         elseif Config.Books[bookName]["prop"] == 'map' then
-            propName = `prop_tourist_map_01`
+            propName = "prop_tourist_map_01"
             bookProp = CreateObject(propName, ped_coords.x, ped_coords.y, ped_coords.z,  true,  true, true) 
             AttachEntityToEntity(bookProp, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
         end
@@ -57,9 +57,6 @@ RegisterNetEvent('gmm-books:client:OpenBook', function(bookName)
     })
 end)
 
-RegisterNetEvent("")
-
-
 -- NUI Stuff 
 RegisterNUICallback('escape', function(data, cb)
     local ped = PlayerPedId()
@@ -69,7 +66,7 @@ RegisterNUICallback('escape', function(data, cb)
 end)
 
 
-local hasInk = true
+local hasInk = false
 
 RegisterNetEvent('ox:openprinter')
 AddEventHandler('ox:openprinter', function()
@@ -175,6 +172,7 @@ local function canPrint()
 end
 
 -- Event to handle the input for printing a book
+-- Event to handle the input for printing a book
 RegisterNetEvent('printer:printBook')
 AddEventHandler('printer:printBook', function()
     if not canPrint() then return end -- Check ink before printing
@@ -193,7 +191,39 @@ AddEventHandler('printer:printBook', function()
     local numberOfPages = tonumber(input[2])
 
     if numberOfPages and numberOfPages > 0 then
+        -- After book title and pages, ask for image URLs for each page
+        local pageInputs = {}
+        for i = 1, numberOfPages do
+            local pageInput = lib.inputDialog('Page ' .. i .. ' of ' .. bookTitle, {
+                { type = 'input', label = 'Image URL for Page ' .. i, placeholder = 'Enter a PNG Image URL', pattern = 'https?://.*%.jpeg' }
+            })
+            
+            -- If user cancels or enters invalid data
+            if not pageInput or not pageInput[1] then
+                lib.notify({ title = 'Printer', description = 'Image URL for Page ' .. i .. ' is required!', type = 'error' })
+                return
+            end
+
+            local imageUrl = pageInput[1]
+
+            -- Check if URL is a valid PNG image URL
+            if not imageUrl:match('https?://.*%.jpeg') then
+                lib.notify({ title = 'Printer', description = 'Invalid PNG URL for Page ' .. i, type = 'error' })
+                return
+            end
+
+            -- Store the image URL for this page
+            table.insert(pageInputs, imageUrl)
+        end
+
+        -- Proceed to "print" the book with all pages
         lib.notify({ title = 'Printer', description = 'Printing book: ' .. bookTitle, type = 'info' })
+        -- Here you would normally trigger the printing logic with `bookTitle` and `pageInputs`
+        -- For now, we just log the inputs
+        print("Book Title: " .. bookTitle)
+        for i, url in ipairs(pageInputs) do
+            print("Page " .. i .. " Image URL: " .. url)
+        end
     else
         lib.notify({ title = 'Printer', description = 'Invalid number of pages!', type = 'error' })
     end
@@ -211,13 +241,13 @@ AddEventHandler('printer:printItem', function(itemType)
         dialogTitle = 'Flyer Printing'
         inputFields = {
             { type = 'input', label = 'Flyer Title', placeholder = 'Enter the flyer title' },
-            { type = 'input', label = 'PNG Image URL', placeholder = 'Enter a link to a PNG image', pattern = 'https?://.*%.png' }
+            { type = 'input', label = 'PNG Image URL', placeholder = 'Enter a link to a image', pattern = 'https?://.*%.jpeg' }
         }
     elseif itemType == 'business_card' then
         dialogTitle = 'Business Card Printing'
         inputFields = {
             { type = 'input', label = 'Business Card Title', placeholder = 'Enter the card title' },
-            { type = 'input', label = 'PNG Image URL', placeholder = 'Enter a link to a PNG image', pattern = 'https?://.*%.png' }
+            { type = 'input', label = 'PNG Image URL', placeholder = 'Enter a link to a image', pattern = 'https?://.*%.jpeg' }
         }
     end
 
@@ -230,8 +260,8 @@ AddEventHandler('printer:printItem', function(itemType)
     local title = input[1]
     local pngUrl = input[2]
 
-    if not pngUrl:match('https?://.*%.png') then
-        lib.notify({ title = 'Printer', description = 'Invalid PNG URL! Please provide a valid link to a PNG image.', type = 'error' })
+    if not pngUrl:match('https?://.*%.jpeg') then
+        lib.notify({ title = 'Printer', description = 'Invalid URL! Please provide a valid link to a image.', type = 'error' })
         return
     end
 
