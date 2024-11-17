@@ -16,6 +16,7 @@ server_scripts {
 
 client_scripts {
     'client/main.lua',
+    'client/cl_target.lua',
 }
 
 files {
