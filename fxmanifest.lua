@@ -15,8 +15,9 @@ server_scripts {
 }
 
 client_scripts {
-    'client/main.lua',
+    'client/cl_printer.lua',
     'client/cl_target.lua',
+    'client/main.lua',
 }
 
 files {
